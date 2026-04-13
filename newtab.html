@@ -23,7 +23,7 @@
     <p class="greeting" id="greeting"></p>
 
     <!-- Clocks -->
-    <div class="clocks" id="clocks">
+    <div class="clocks">
       <div class="clock-card clock-card--pacific">
         <span class="clock-hm" id="clock-pt-hm"></span>
         <div class="clock-meta">
@@ -32,9 +32,7 @@
         </div>
         <span class="clock-tz">Pacific</span>
       </div>
-
       <div class="clock-sep"></div>
-
       <div class="clock-card clock-card--eastern">
         <span class="clock-hm" id="clock-et-hm"></span>
         <div class="clock-meta">
@@ -43,9 +41,7 @@
         </div>
         <span class="clock-tz">Eastern</span>
       </div>
-
       <div class="clock-sep"></div>
-
       <div class="clock-card clock-card--tehran">
         <span class="clock-hm" id="clock-th-hm"></span>
         <div class="clock-meta">
@@ -55,7 +51,6 @@
         <span class="clock-tz">Tehran</span>
       </div>
     </div>
-
     <p class="date-line" id="date-line"></p>
 
     <!-- Global Search -->
@@ -67,30 +62,52 @@
       <div id="search-results" class="search-results" hidden></div>
     </div>
 
-    <!-- Primary AIs -->
-    <section class="section">
-      <div class="section-header">
+    <!-- ══════ Unified AI Tools Section ══════ -->
+    <section class="section ai-section">
+      <div class="ai-header">
         <h2 class="section-title">AI Tools</h2>
-        <button class="launch-all-btn" data-group="primary">Launch All</button>
+        <div class="ai-header-actions">
+          <button id="add-card-btn" class="ai-action-btn" title="Add a tool">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <button id="launch-all-btn" class="ai-action-btn ai-launch-all" title="Launch all">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </button>
+        </div>
       </div>
-      <div class="card-grid" id="grid-primary" data-group="primary"></div>
-    </section>
 
-    <!-- Secondary AIs -->
-    <section class="section">
-      <div class="section-header">
-        <h2 class="section-title section-title--sm">Secondary</h2>
-        <button class="launch-all-btn" data-group="secondary">Launch All</button>
+      <!-- Primary subgroup -->
+      <div class="ai-subgroup">
+        <div class="ai-sub-header">
+          <span class="ai-sub-label">Primary</span>
+          <button class="ai-sub-launch" data-group="primary" title="Launch primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </button>
+        </div>
+        <div class="ai-grid" id="grid-primary" data-group="primary"></div>
       </div>
-      <div class="card-grid" id="grid-secondary" data-group="secondary"></div>
-    </section>
 
-    <!-- Tools -->
-    <section class="section">
-      <div class="section-header">
-        <h2 class="section-title section-title--sm">Tools</h2>
+      <!-- Secondary subgroup -->
+      <div class="ai-subgroup">
+        <div class="ai-sub-header">
+          <span class="ai-sub-label">Secondary</span>
+          <button class="ai-sub-launch" data-group="secondary" title="Launch secondary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </button>
+        </div>
+        <div class="ai-grid" id="grid-secondary" data-group="secondary"></div>
       </div>
-      <div class="card-grid card-grid--auto" id="grid-tools" data-group="tools"></div>
+
+      <!-- Tools subgroup -->
+      <div class="ai-subgroup">
+        <div class="ai-sub-header">
+          <span class="ai-sub-label">Tools</span>
+          <button class="ai-sub-launch" data-group="tools" title="Launch tools">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </button>
+        </div>
+        <div class="ai-grid" id="grid-tools" data-group="tools"></div>
+      </div>
     </section>
 
     <!-- Tab Manager -->
@@ -175,7 +192,11 @@
       <h3 class="modal-title">Add AI Tool</h3>
       <input type="text" id="ac-name" class="text-input" placeholder="Name (e.g. Perplexity)">
       <input type="url" id="ac-url" class="text-input" placeholder="URL (e.g. https://perplexity.ai)">
-      <input type="hidden" id="ac-group">
+      <div class="modal-group-picker">
+        <label class="modal-radio"><input type="radio" name="ac-group" value="primary" checked> Primary</label>
+        <label class="modal-radio"><input type="radio" name="ac-group" value="secondary"> Secondary</label>
+        <label class="modal-radio"><input type="radio" name="ac-group" value="tools"> Tools</label>
+      </div>
       <div class="modal-actions">
         <button id="ac-cancel" class="btn-sm btn-ghost">Cancel</button>
         <button id="ac-save" class="btn-sm btn-primary">Add</button>

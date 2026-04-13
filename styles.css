@@ -268,93 +268,114 @@ body {
 .sr-empty { padding: 1.5rem; text-align: center; color: var(--text-4); font-size: 0.8rem; }
 
 /* ═══════════════════════════════════════════
-   Section Headers
+   Section Title (reused)
    ═══════════════════════════════════════════ */
-.section-header {
-  display: flex; align-items: center; justify-content: center;
-  gap: 0.85rem; margin-bottom: 1.75rem;
-}
-
 .section-title {
   font-size: 1.2rem; font-weight: 300;
   letter-spacing: 0.25em; text-transform: uppercase;
   color: var(--text-2);
 }
 
-.section-title--sm { font-size: 0.95rem; color: var(--text-3); }
-
-.launch-all-btn {
-  padding: 0.4rem 1rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg-surface);
-  color: var(--text-2);
-  font-size: 0.75rem; font-weight: 500; letter-spacing: 0.04em;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.launch-all-btn:hover { border-color: var(--border-hover); color: var(--text); background: var(--bg-card-hover); }
-.launch-all-btn:active { transform: scale(0.97); }
-
 /* ═══════════════════════════════════════════
-   Card Grid
+   Unified AI Section
    ═══════════════════════════════════════════ */
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.25rem;
-  margin: 0 auto;
+.ai-section {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg-surface);
+  padding: 1.25rem 1.5rem 1.5rem;
 }
 
-.card-grid--auto {
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+.ai-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.ai-header .section-title { margin: 0; }
+
+.ai-header-actions { display: flex; gap: 0.4rem; }
+
+.ai-action-btn {
+  width: 32px; height: 32px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--bg-card);
+  color: var(--text-3); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s ease;
+}
+.ai-action-btn svg { width: 16px; height: 16px; }
+.ai-action-btn:hover { border-color: var(--border-hover); color: var(--text); background: var(--bg-card-hover); }
+
+.ai-launch-all { color: #f9ab00; border-color: rgba(249,171,0,0.25); }
+.ai-launch-all:hover { border-color: #f9ab00; color: #f9ab00; background: rgba(249,171,0,0.08); }
+
+/* Subgroup */
+.ai-subgroup { margin-bottom: 1rem; }
+.ai-subgroup:last-child { margin-bottom: 0; }
+
+.ai-sub-header {
+  display: flex; align-items: center; gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.ai-sub-label {
+  font-size: 0.65rem; font-weight: 500;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text-3); flex: 1; text-align: left;
+}
+
+.ai-sub-launch {
+  width: 24px; height: 24px; border-radius: 6px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-4); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s ease;
+}
+.ai-sub-launch svg { width: 12px; height: 12px; }
+.ai-sub-launch:hover { border-color: var(--border-hover); color: var(--text-2); background: var(--bg-card-hover); }
+
+/* Card grid inside AI section */
+.ai-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 0.6rem;
 }
 
 .card {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 0.85rem; padding: 2rem 1.5rem;
-  border-radius: 14px;
+  gap: 0.45rem; padding: 0.75rem 0.5rem;
+  border-radius: 10px;
   text-decoration: none; color: var(--text);
   border: 1px solid var(--border);
   background: var(--bg-card);
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   position: relative;
 }
-.card:hover { transform: translateY(-3px); border-color: var(--card-accent, var(--border-hover)); box-shadow: 0 8px 28px var(--shadow); }
-.card:active { transform: translateY(-1px); }
+.card:hover { transform: translateY(-2px); border-color: var(--card-accent, var(--border-hover)); box-shadow: 0 6px 20px var(--shadow); }
+.card:active { transform: translateY(0); }
 
 .card.dragging { opacity: 0.4; }
 .card.drag-over { border-color: var(--clock-accent-3) !important; box-shadow: 0 0 0 2px rgba(139,108,239,0.25); }
 
 .card-logo {
-  width: 44px; height: 44px; border-radius: 12px; object-fit: contain;
+  width: 28px; height: 28px; border-radius: 7px; object-fit: contain;
 }
 
 .card-label {
-  font-size: 0.85rem; font-weight: 500; letter-spacing: 0.03em; color: var(--text);
+  font-size: 0.65rem; font-weight: 500; letter-spacing: 0.02em; color: var(--text-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
 }
 
 .card-remove {
-  position: absolute; top: 6px; right: 8px;
+  position: absolute; top: 2px; right: 4px;
   background: none; border: none; color: var(--text-4);
-  font-size: 0.85rem; cursor: pointer; padding: 2px 5px; border-radius: 4px;
-  opacity: 0; transition: opacity 0.15s, color 0.15s;
+  font-size: 0.75rem; cursor: pointer; padding: 1px 4px; border-radius: 4px;
+  opacity: 0; transition: opacity 0.15s, color 0.15s; line-height: 1;
 }
 .card:hover .card-remove { opacity: 1; }
 .card-remove:hover { color: #f87171; }
 
-/* Add-card button */
-.card-add {
-  border-style: dashed; border-color: var(--border);
-  background: transparent; color: var(--text-4);
-  min-height: 110px;
-}
-.card-add:hover { color: var(--text-2); border-color: var(--border-hover); background: var(--bg-card); }
-.card-add-icon { font-size: 1.8rem; font-weight: 200; line-height: 1; }
-.card-add-label { font-size: 0.75rem; font-weight: 400; }
-
-/* Card accent colours (dark) */
+/* Card accent colours */
 .card[data-id="claude"]   { --card-accent: #d4845a; }
 .card[data-id="chatgpt"]  { --card-accent: #10a37f; }
 .card[data-id="gemini"]   { --card-accent: #8b6cef; }
@@ -364,6 +385,11 @@ body {
 .card[data-id="qwen"]     { --card-accent: #7c5cbf; }
 .card[data-id="zai"]      { --card-accent: #50c8c8; }
 .card[data-id="notebooklm"] { --card-accent: #f9ab00; }
+
+/* Modal radio group */
+.modal-group-picker { display: flex; gap: 1rem; }
+.modal-radio { display: flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; color: var(--text-2); cursor: pointer; }
+.modal-radio input { accent-color: #8b6cef; }
 
 /* ═══════════════════════════════════════════
    Collapsible Sections
@@ -623,8 +649,11 @@ body {
    Responsive
    ═══════════════════════════════════════════ */
 @media (max-width: 640px) {
-  .card-grid { grid-template-columns: repeat(2, 1fr); gap: 0.85rem; }
-  .card { padding: 1.5rem 1rem; }
+  .ai-grid { grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+  .ai-section { padding: 1rem; }
+  .card { padding: 0.6rem 0.35rem; }
+  .card-logo { width: 24px; height: 24px; }
+  .card-label { font-size: 0.58rem; }
   .clocks { gap: 0; flex-wrap: wrap; }
   .clock-card { padding: 0.5rem 1rem; }
   .clock-hm { font-size: 2rem; }

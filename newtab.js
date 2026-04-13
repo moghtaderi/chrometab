@@ -146,9 +146,9 @@ document.addEventListener("DOMContentLoaded", () => {
     ],
   };
 
-  // Special logo overrides (when Google's S2 favicon doesn't return the right icon)
+  // Special logo overrides (bundled or direct URLs)
   const LOGO_OVERRIDES = {
-    notebooklm: "https://notebooklm.google.com/favicon.ico",
+    notebooklm: "icons/notebooklm.svg",
   };
 
   function loadCards(group) {
@@ -181,15 +181,12 @@ document.addEventListener("DOMContentLoaded", () => {
         '<span class="card-label">' + card.name + '</span>' +
         (card.custom ? '<button class="card-remove" title="Remove">&times;</button>' : '');
 
-      // Remove custom card
       const removeBtn = el.querySelector(".card-remove");
       if (removeBtn) {
         removeBtn.addEventListener("click", (e) => {
           e.preventDefault(); e.stopPropagation();
-          const arr = loadCards(group);
-          arr.splice(i, 1);
-          saveCards(group, arr);
-          renderCards(group);
+          const arr = loadCards(group); arr.splice(i, 1);
+          saveCards(group, arr); renderCards(group);
         });
       }
 
@@ -203,51 +200,46 @@ document.addEventListener("DOMContentLoaded", () => {
       el.addEventListener("dragover", (e) => { e.preventDefault(); el.classList.add("drag-over"); });
       el.addEventListener("dragleave", () => el.classList.remove("drag-over"));
       el.addEventListener("drop", (e) => {
-        e.preventDefault();
-        el.classList.remove("drag-over");
+        e.preventDefault(); el.classList.remove("drag-over");
         try {
           const src = JSON.parse(e.dataTransfer.getData("text/plain"));
           if (src.group !== group) return;
           const arr = loadCards(group);
           const [moved] = arr.splice(src.index, 1);
           arr.splice(i, 0, moved);
-          saveCards(group, arr);
-          renderCards(group);
+          saveCards(group, arr); renderCards(group);
         } catch {}
       });
 
       grid.appendChild(el);
     });
-
-    // "+" add card
-    const addBtn = document.createElement("div");
-    addBtn.className = "card card-add";
-    addBtn.innerHTML = '<span class="card-add-icon">+</span><span class="card-add-label">Add</span>';
-    addBtn.addEventListener("click", () => openAddModal(group));
-    grid.appendChild(addBtn);
   }
 
   ["primary", "secondary", "tools"].forEach(renderCards);
 
-  // Launch All
-  document.querySelectorAll(".launch-all-btn").forEach(btn => {
+  // Launch All (entire section -- every group)
+  document.getElementById("launch-all-btn").addEventListener("click", () => {
+    ["primary", "secondary", "tools"].forEach(g => {
+      loadCards(g).forEach(c => window.open(c.url, "_blank"));
+    });
+  });
+
+  // Launch subgroup
+  document.querySelectorAll(".ai-sub-launch").forEach(btn => {
     btn.addEventListener("click", () => {
-      const cards = loadCards(btn.dataset.group);
-      cards.forEach(c => window.open(c.url, "_blank"));
+      loadCards(btn.dataset.group).forEach(c => window.open(c.url, "_blank"));
     });
   });
 
   // Add-card modal
-  const modal     = document.getElementById("add-card-modal");
-  const acName    = document.getElementById("ac-name");
-  const acUrl     = document.getElementById("ac-url");
-  const acGroup   = document.getElementById("ac-group");
+  const modal  = document.getElementById("add-card-modal");
+  const acName = document.getElementById("ac-name");
+  const acUrl  = document.getElementById("ac-url");
 
-  function openAddModal(group) {
-    acName.value = ""; acUrl.value = ""; acGroup.value = group;
-    modal.hidden = false;
-    acName.focus();
-  }
+  document.getElementById("add-card-btn").addEventListener("click", () => {
+    acName.value = ""; acUrl.value = "";
+    modal.hidden = false; acName.focus();
+  });
 
   document.getElementById("ac-cancel").addEventListener("click", () => { modal.hidden = true; });
   modal.addEventListener("click", (e) => { if (e.target === modal) modal.hidden = true; });
@@ -257,12 +249,11 @@ document.addEventListener("DOMContentLoaded", () => {
     let url = acUrl.value.trim();
     if (!name || !url) return;
     if (!/^https?:\/\//.test(url)) url = "https://" + url;
-    const group = acGroup.value;
+    const group = document.querySelector('input[name="ac-group"]:checked').value;
     const cards = loadCards(group);
     const PALETTE = ["#e06030","#30a0e0","#e0a030","#50c878","#c850c8","#e04040","#40b0b0","#b08040"];
     cards.push({ id: "custom_" + Date.now(), name, url, custom: true, accent: PALETTE[cards.length % PALETTE.length] });
-    saveCards(group, cards);
-    renderCards(group);
+    saveCards(group, cards); renderCards(group);
     modal.hidden = true;
   });
 
