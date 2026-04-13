@@ -1,6 +1,64 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-  // ── Greeting & Clocks ──────────────────────────────────────────────
+  /* ═══════════════════════════════════════════
+     Helpers
+     ═══════════════════════════════════════════ */
+  function getDomain(url) {
+    try { return new URL(url).hostname; } catch { return url || "(unknown)"; }
+  }
+
+  function timeAgo(ts) {
+    if (!ts) return "";
+    const s = Math.floor((Date.now() - ts) / 1000);
+    if (s < 60) return "just now";
+    const m = Math.floor(s / 60);  if (m < 60) return m + "m ago";
+    const h = Math.floor(m / 60);  if (h < 24) return h + "h ago";
+    const d = Math.floor(h / 24);  if (d < 30) return d + "d ago";
+    return Math.floor(d / 30) + "mo ago";
+  }
+
+  function ageClass(ts) {
+    if (!ts) return "";
+    const h = (Date.now() - ts) / 3600000;
+    return h > 72 ? "very-old" : h > 24 ? "old" : "";
+  }
+
+  function isYouTubeUrl(url) {
+    return /(?:youtube\.com\/(?:watch|embed|shorts)|youtu\.be\/)/.test(url || "");
+  }
+
+  function extractVideoId(url) {
+    let m;
+    if ((m = url.match(/youtu\.be\/([A-Za-z0-9_-]{11})/))) return m[1];
+    if ((m = url.match(/[?&]v=([A-Za-z0-9_-]{11})/)))      return m[1];
+    if ((m = url.match(/\/embed\/([A-Za-z0-9_-]{11})/)))    return m[1];
+    if ((m = url.match(/\/shorts\/([A-Za-z0-9_-]{11})/)))   return m[1];
+    return null;
+  }
+
+  function faviconUrl(domain) {
+    return "https://www.google.com/s2/favicons?domain=" + domain + "&sz=128";
+  }
+
+  function store(key)       { try { return JSON.parse(localStorage.getItem(key)) || null; } catch { return null; } }
+  function storePut(key, v) { localStorage.setItem(key, JSON.stringify(v)); }
+
+  /* ═══════════════════════════════════════════
+     Theme
+     ═══════════════════════════════════════════ */
+  const html = document.documentElement;
+  const themeSaved = localStorage.getItem("theme") || "dark";
+  html.setAttribute("data-theme", themeSaved);
+
+  document.getElementById("theme-toggle").addEventListener("click", () => {
+    const next = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    html.setAttribute("data-theme", next);
+    localStorage.setItem("theme", next);
+  });
+
+  /* ═══════════════════════════════════════════
+     Greeting
+     ═══════════════════════════════════════════ */
   const greetings = [
     "Welcome back, Reza. Ready to build something great?",
     "Good to see you, Reza. What's on the agenda today?",
@@ -20,620 +78,600 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   function pickGreeting() {
-    // Time-of-day prefix
-    const hour = new Date().getHours();
-    let prefix;
-    if (hour < 5) prefix = "Burning the midnight oil, Reza?";
-    else if (hour < 12) prefix = "Good morning, Reza!";
-    else if (hour < 17) prefix = "Good afternoon, Reza!";
-    else if (hour < 21) prefix = "Good evening, Reza!";
-    else prefix = "Late night session, Reza?";
-
-    // Pick a random motivational line
-    const line = greetings[Math.floor(Math.random() * greetings.length)];
-
-    // Alternate: sometimes use just the time-based greeting, sometimes the motivational one
-    return Math.random() > 0.4 ? line : prefix;
+    const h = new Date().getHours();
+    const tod = h < 5 ? "Burning the midnight oil, Reza?"
+              : h < 12 ? "Good morning, Reza."
+              : h < 17 ? "Good afternoon, Reza."
+              : h < 21 ? "Good evening, Reza."
+              : "Late night session, Reza?";
+    const mot = greetings[Math.floor(Math.random() * greetings.length)];
+    return Math.random() > 0.4 ? mot : tod;
   }
-
   document.getElementById("greeting").textContent = pickGreeting();
 
-  function formatTime(tz) {
-    return new Date().toLocaleTimeString("en-US", {
-      timeZone: tz,
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: true,
-    });
-  }
-
-  function formatDate() {
-    return new Date().toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+  /* ═══════════════════════════════════════════
+     Clocks
+     ═══════════════════════════════════════════ */
+  function clockParts(tz) {
+    const now = new Date();
+    const full = now.toLocaleTimeString("en-US", { timeZone: tz, hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true });
+    // "10:35:22 PM"
+    const [time, ap] = full.split(" ");
+    const [hh, mm, ss] = time.split(":");
+    return { hm: hh + ":" + mm, sc: ss, ap: ap };
   }
 
   function updateClocks() {
-    document.getElementById("clock-pt").textContent = formatTime("America/Los_Angeles");
-    document.getElementById("clock-et").textContent = formatTime("America/New_York");
-    document.getElementById("clock-tehran").textContent = formatTime("Asia/Tehran");
-    document.getElementById("clock-date").textContent = formatDate();
-  }
+    const pt = clockParts("America/Los_Angeles");
+    const et = clockParts("America/New_York");
+    const th = clockParts("Asia/Tehran");
 
+    document.getElementById("clock-pt-hm").textContent = pt.hm;
+    document.getElementById("clock-pt-sc").textContent = pt.sc;
+    document.getElementById("clock-pt-ap").textContent = pt.ap;
+
+    document.getElementById("clock-et-hm").textContent = et.hm;
+    document.getElementById("clock-et-sc").textContent = et.sc;
+    document.getElementById("clock-et-ap").textContent = et.ap;
+
+    document.getElementById("clock-th-hm").textContent = th.hm;
+    document.getElementById("clock-th-sc").textContent = th.sc;
+    document.getElementById("clock-th-ap").textContent = th.ap;
+
+    document.getElementById("date-line").textContent = new Date().toLocaleDateString("en-US", {
+      weekday: "long", year: "numeric", month: "long", day: "numeric"
+    });
+  }
   updateClocks();
   setInterval(updateClocks, 1000);
 
-  // ── Launch All buttons ──────────────────────────────────────────────
-  document.getElementById("launch-all-primary").addEventListener("click", () => {
-    launchGroup("primary");
-  });
+  /* ═══════════════════════════════════════════
+     Dynamic AI Cards
+     ═══════════════════════════════════════════ */
+  const DEFAULT_CARDS = {
+    primary: [
+      { id: "claude",  name: "Claude",   url: "https://claude.ai" },
+      { id: "chatgpt", name: "ChatGPT",  url: "https://chatgpt.com" },
+      { id: "gemini",  name: "Gemini",   url: "https://gemini.google.com" },
+      { id: "grok",    name: "Grok",     url: "https://grok.com" },
+    ],
+    secondary: [
+      { id: "deepseek", name: "DeepSeek", url: "https://chat.deepseek.com" },
+      { id: "minimax",  name: "MiniMax",  url: "https://agent.minimax.io/" },
+      { id: "qwen",     name: "Qwen",     url: "https://chat.qwen.ai" },
+      { id: "zai",      name: "Z AI",     url: "https://z.ai" },
+    ],
+    tools: [
+      { id: "notebooklm", name: "NotebookLM", url: "https://notebooklm.google.com/" },
+    ],
+  };
 
-  document.getElementById("launch-all-secondary").addEventListener("click", () => {
-    launchGroup("secondary");
-  });
+  // Special logo overrides (when Google's S2 favicon doesn't return the right icon)
+  const LOGO_OVERRIDES = {
+    notebooklm: "https://notebooklm.google.com/favicon.ico",
+  };
 
-  function launchGroup(group) {
-    const cards = document.querySelectorAll(`.card[data-group="${group}"]`);
-    cards.forEach((card) => {
-      window.open(card.href, "_blank");
+  function loadCards(group) {
+    return store("cards_" + group) || DEFAULT_CARDS[group].map(c => ({ ...c }));
+  }
+  function saveCards(group, cards) { storePut("cards_" + group, cards); }
+
+  function logoSrc(card) {
+    if (LOGO_OVERRIDES[card.id]) return LOGO_OVERRIDES[card.id];
+    return faviconUrl(getDomain(card.url));
+  }
+
+  function renderCards(group) {
+    const grid = document.getElementById("grid-" + group);
+    const cards = loadCards(group);
+    grid.innerHTML = "";
+
+    cards.forEach((card, i) => {
+      const el = document.createElement("a");
+      el.href = card.url;
+      el.className = "card";
+      el.draggable = true;
+      el.dataset.group = group;
+      el.dataset.index = i;
+      if (card.id) el.dataset.id = card.id;
+      if (card.accent) el.style.setProperty("--card-accent", card.accent);
+
+      el.innerHTML =
+        '<img class="card-logo" src="' + logoSrc(card) + '" alt="">' +
+        '<span class="card-label">' + card.name + '</span>' +
+        (card.custom ? '<button class="card-remove" title="Remove">&times;</button>' : '');
+
+      // Remove custom card
+      const removeBtn = el.querySelector(".card-remove");
+      if (removeBtn) {
+        removeBtn.addEventListener("click", (e) => {
+          e.preventDefault(); e.stopPropagation();
+          const arr = loadCards(group);
+          arr.splice(i, 1);
+          saveCards(group, arr);
+          renderCards(group);
+        });
+      }
+
+      // Drag handlers
+      el.addEventListener("dragstart", (e) => {
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", JSON.stringify({ group, index: i }));
+        el.classList.add("dragging");
+      });
+      el.addEventListener("dragend", () => el.classList.remove("dragging"));
+      el.addEventListener("dragover", (e) => { e.preventDefault(); el.classList.add("drag-over"); });
+      el.addEventListener("dragleave", () => el.classList.remove("drag-over"));
+      el.addEventListener("drop", (e) => {
+        e.preventDefault();
+        el.classList.remove("drag-over");
+        try {
+          const src = JSON.parse(e.dataTransfer.getData("text/plain"));
+          if (src.group !== group) return;
+          const arr = loadCards(group);
+          const [moved] = arr.splice(src.index, 1);
+          arr.splice(i, 0, moved);
+          saveCards(group, arr);
+          renderCards(group);
+        } catch {}
+      });
+
+      grid.appendChild(el);
     });
+
+    // "+" add card
+    const addBtn = document.createElement("div");
+    addBtn.className = "card card-add";
+    addBtn.innerHTML = '<span class="card-add-icon">+</span><span class="card-add-label">Add</span>';
+    addBtn.addEventListener("click", () => openAddModal(group));
+    grid.appendChild(addBtn);
   }
 
-  // ── Watch Later: collapsible toggle ─────────────────────────────────
-  const toggleBtn = document.getElementById("watch-later-toggle");
-  const panel = document.getElementById("watch-later-panel");
-  const arrow = document.getElementById("toggle-arrow");
+  ["primary", "secondary", "tools"].forEach(renderCards);
 
-  // Remember open/closed state
-  const wasOpen = localStorage.getItem("watchLaterOpen") === "true";
-  if (wasOpen) {
-    panel.classList.add("open");
-    arrow.classList.add("open");
-  }
-
-  toggleBtn.addEventListener("click", () => {
-    const isOpen = panel.classList.toggle("open");
-    arrow.classList.toggle("open");
-    localStorage.setItem("watchLaterOpen", isOpen);
+  // Launch All
+  document.querySelectorAll(".launch-all-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const cards = loadCards(btn.dataset.group);
+      cards.forEach(c => window.open(c.url, "_blank"));
+    });
   });
 
-  // ── Watch Later: video management ───────────────────────────────────
-  const STORAGE_KEY = "watchLaterVideos";
-  const form = document.getElementById("add-video-form");
-  const input = document.getElementById("video-url-input");
-  const listEl = document.getElementById("video-list");
-  const emptyEl = document.getElementById("video-empty");
-  const countEl = document.getElementById("video-count");
+  // Add-card modal
+  const modal     = document.getElementById("add-card-modal");
+  const acName    = document.getElementById("ac-name");
+  const acUrl     = document.getElementById("ac-url");
+  const acGroup   = document.getElementById("ac-group");
 
-  function loadVideos() {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    } catch {
-      return [];
-    }
+  function openAddModal(group) {
+    acName.value = ""; acUrl.value = ""; acGroup.value = group;
+    modal.hidden = false;
+    acName.focus();
   }
 
-  function saveVideos(videos) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(videos));
+  document.getElementById("ac-cancel").addEventListener("click", () => { modal.hidden = true; });
+  modal.addEventListener("click", (e) => { if (e.target === modal) modal.hidden = true; });
+
+  document.getElementById("ac-save").addEventListener("click", () => {
+    const name = acName.value.trim();
+    let url = acUrl.value.trim();
+    if (!name || !url) return;
+    if (!/^https?:\/\//.test(url)) url = "https://" + url;
+    const group = acGroup.value;
+    const cards = loadCards(group);
+    const PALETTE = ["#e06030","#30a0e0","#e0a030","#50c878","#c850c8","#e04040","#40b0b0","#b08040"];
+    cards.push({ id: "custom_" + Date.now(), name, url, custom: true, accent: PALETTE[cards.length % PALETTE.length] });
+    saveCards(group, cards);
+    renderCards(group);
+    modal.hidden = true;
+  });
+
+  /* ═══════════════════════════════════════════
+     Collapsible Panels (generic)
+     ═══════════════════════════════════════════ */
+  function initCollapsible(toggleId, panelId, arrowId, storeKey, onOpen) {
+    const toggle = document.getElementById(toggleId);
+    const panel  = document.getElementById(panelId);
+    const arrow  = document.getElementById(arrowId);
+    const saved  = localStorage.getItem(storeKey) === "true";
+    if (saved) { panel.classList.add("open"); arrow.classList.add("open"); }
+
+    toggle.addEventListener("click", () => {
+      const open = panel.classList.toggle("open");
+      arrow.classList.toggle("open");
+      localStorage.setItem(storeKey, open);
+      if (open && onOpen) onOpen();
+    });
+    return { panel, arrow, isOpen: () => panel.classList.contains("open") };
   }
 
-  // Extract YouTube video ID from various URL formats
-  function extractVideoId(url) {
-    url = url.trim();
-    let match;
+  /* ═══════════════════════════════════════════
+     Watch Later
+     ═══════════════════════════════════════════ */
+  const WL_KEY = "watchLaterVideos";
+  function loadVideos()     { return store(WL_KEY) || []; }
+  function saveVideos(v)    { storePut(WL_KEY, v); }
 
-    // youtu.be/ID
-    match = url.match(/youtu\.be\/([A-Za-z0-9_-]{11})/);
-    if (match) return match[1];
-
-    // youtube.com/watch?v=ID
-    match = url.match(/[?&]v=([A-Za-z0-9_-]{11})/);
-    if (match) return match[1];
-
-    // youtube.com/embed/ID
-    match = url.match(/\/embed\/([A-Za-z0-9_-]{11})/);
-    if (match) return match[1];
-
-    // youtube.com/shorts/ID
-    match = url.match(/\/shorts\/([A-Za-z0-9_-]{11})/);
-    if (match) return match[1];
-
-    return null;
-  }
+  const wlList  = document.getElementById("video-list");
+  const wlEmpty = document.getElementById("video-empty");
+  const wlCount = document.getElementById("video-count");
 
   function renderVideos() {
     const videos = loadVideos();
-    listEl.innerHTML = "";
-    countEl.textContent = videos.length;
-    emptyEl.style.display = videos.length === 0 ? "block" : "none";
+    wlList.innerHTML = "";
+    wlCount.textContent = videos.length;
+    wlEmpty.style.display = videos.length ? "none" : "block";
 
-    videos.forEach((video, index) => {
-      const item = document.createElement("div");
-      item.className = "video-item";
-
-      const watchUrl = `https://www.youtube.com/watch?v=${video.id}`;
-      const thumbUrl = `https://img.youtube.com/vi/${video.id}/mqdefault.jpg`;
-
-      item.innerHTML = `
-        <a href="${watchUrl}" target="_blank">
-          <img class="video-thumb" src="${thumbUrl}" alt="Thumbnail">
-        </a>
-        <div class="video-info">
-          <a href="${watchUrl}" target="_blank" class="video-title">${video.title || watchUrl}</a>
-          <span class="video-url-display">${watchUrl}</span>
-        </div>
-        <button class="video-remove-btn" data-index="${index}">Remove</button>
-      `;
-
-      listEl.appendChild(item);
+    videos.forEach((v, i) => {
+      const url = "https://www.youtube.com/watch?v=" + v.id;
+      const thumb = "https://img.youtube.com/vi/" + v.id + "/mqdefault.jpg";
+      const row = document.createElement("div");
+      row.className = "item-row";
+      row.innerHTML =
+        '<a href="' + url + '" target="_blank"><img class="item-thumb" src="' + thumb + '" alt=""></a>' +
+        '<div class="item-info"><a href="' + url + '" target="_blank" class="item-title">' + (v.title || url) + '</a>' +
+        '<span class="item-url">' + url + '</span></div>' +
+        '<button class="item-remove" data-i="' + i + '">Remove</button>';
+      wlList.appendChild(row);
     });
 
-    // Remove button handlers
-    listEl.querySelectorAll(".video-remove-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        const idx = parseInt(e.target.dataset.index, 10);
-        const vids = loadVideos();
-        vids.splice(idx, 1);
-        saveVideos(vids);
-        renderVideos();
-      });
-    });
+    wlList.querySelectorAll(".item-remove").forEach(b => b.addEventListener("click", (e) => {
+      const arr = loadVideos(); arr.splice(+e.target.dataset.i, 1); saveVideos(arr); renderVideos();
+    }));
   }
 
-  // Try to fetch the video title from the YouTube oEmbed API
-  async function fetchTitle(videoId) {
+  async function fetchYTTitle(id) {
     try {
-      const res = await fetch(
-        `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
-      );
-      if (!res.ok) return null;
-      const data = await res.json();
-      return data.title || null;
-    } catch {
-      return null;
-    }
+      const r = await fetch("https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=" + id + "&format=json");
+      if (!r.ok) return null;
+      return (await r.json()).title || null;
+    } catch { return null; }
   }
 
-  form.addEventListener("submit", async (e) => {
+  const wlForm  = document.getElementById("add-video-form");
+  const wlInput = document.getElementById("video-url-input");
+
+  wlForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const url = input.value.trim();
+    const url = wlInput.value.trim();
     if (!url) return;
-
-    const videoId = extractVideoId(url);
-    if (!videoId) {
-      input.value = "";
-      input.placeholder = "Invalid YouTube URL -- try again";
-      setTimeout(() => {
-        input.placeholder = "Paste a YouTube URL and press Enter";
-      }, 2000);
-      return;
-    }
-
-    // Prevent duplicates
+    const vid = extractVideoId(url);
+    if (!vid) { wlInput.value = ""; wlInput.placeholder = "Invalid YouTube URL"; setTimeout(() => { wlInput.placeholder = "Paste a YouTube URL and press Enter"; }, 2000); return; }
     const videos = loadVideos();
-    if (videos.some((v) => v.id === videoId)) {
-      input.value = "";
-      input.placeholder = "Already in the list!";
-      setTimeout(() => {
-        input.placeholder = "Paste a YouTube URL and press Enter";
-      }, 2000);
-      return;
-    }
-
-    // Add immediately with placeholder title, then update asynchronously
-    const newVideo = { id: videoId, title: "", addedAt: Date.now() };
-    videos.unshift(newVideo);
-    saveVideos(videos);
-    input.value = "";
-    renderVideos();
-
-    // Fetch the real title in the background
-    const title = await fetchTitle(videoId);
-    if (title) {
-      const updated = loadVideos();
-      const entry = updated.find((v) => v.id === videoId);
-      if (entry) {
-        entry.title = title;
-        saveVideos(updated);
-        renderVideos();
-      }
-    }
+    if (videos.some(v => v.id === vid)) { wlInput.value = ""; wlInput.placeholder = "Already saved!"; setTimeout(() => { wlInput.placeholder = "Paste a YouTube URL and press Enter"; }, 2000); return; }
+    videos.unshift({ id: vid, title: "", addedAt: Date.now() });
+    saveVideos(videos); wlInput.value = ""; renderVideos();
+    const title = await fetchYTTitle(vid);
+    if (title) { const arr = loadVideos(); const e = arr.find(v => v.id === vid); if (e) { e.title = title; saveVideos(arr); renderVideos(); } }
   });
 
-  // Initial render
+  initCollapsible("watch-later-toggle", "watch-later-panel", "wl-arrow", "wlOpen");
   renderVideos();
 
-  // ── Saved Links ─────────────────────────────────────────────────────
-  const SAVED_LINKS_KEY = "savedLinks";
-  const slToggleBtn = document.getElementById("saved-links-toggle");
-  const slPanel = document.getElementById("saved-links-panel");
-  const slArrow = document.getElementById("saved-links-arrow");
-  const slListEl = document.getElementById("saved-links-list");
-  const slEmptyEl = document.getElementById("saved-links-empty");
-  const slCountEl = document.getElementById("saved-links-count");
+  /* ═══════════════════════════════════════════
+     Saved Links
+     ═══════════════════════════════════════════ */
+  const SL_KEY = "savedLinks";
+  function loadLinks()    { return store(SL_KEY) || []; }
+  function saveLinks(v)   { storePut(SL_KEY, v); }
 
-  const slWasOpen = localStorage.getItem("savedLinksOpen") === "true";
-  if (slWasOpen) {
-    slPanel.classList.add("open");
-    slArrow.classList.add("open");
-  }
+  const slList  = document.getElementById("saved-links-list");
+  const slEmpty = document.getElementById("saved-links-empty");
+  const slCount = document.getElementById("saved-links-count");
 
-  slToggleBtn.addEventListener("click", () => {
-    const isOpen = slPanel.classList.toggle("open");
-    slArrow.classList.toggle("open");
-    localStorage.setItem("savedLinksOpen", isOpen);
-  });
+  function renderLinks() {
+    const links = loadLinks();
+    slList.innerHTML = "";
+    slCount.textContent = links.length;
+    slEmpty.style.display = links.length ? "none" : "block";
 
-  function loadSavedLinks() {
-    try {
-      return JSON.parse(localStorage.getItem(SAVED_LINKS_KEY)) || [];
-    } catch {
-      return [];
-    }
-  }
-
-  function saveSavedLinks(links) {
-    localStorage.setItem(SAVED_LINKS_KEY, JSON.stringify(links));
-  }
-
-  function renderSavedLinks() {
-    const links = loadSavedLinks();
-    slListEl.innerHTML = "";
-    slCountEl.textContent = links.length;
-    slEmptyEl.style.display = links.length === 0 ? "block" : "none";
-
-    links.forEach((link, index) => {
-      const domain = getDomain(link.url);
-      const faviconSrc = link.favicon || `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
-      const item = document.createElement("div");
-      item.className = "saved-item";
-      item.innerHTML = `
-        <img class="saved-favicon" src="${faviconSrc}" alt="">
-        <div class="saved-info">
-          <a href="${link.url}" target="_blank" class="saved-title">${link.title || link.url}</a>
-          <span class="saved-url-display">${link.url}</span>
-        </div>
-        <button class="video-remove-btn" data-index="${index}">Remove</button>
-      `;
-      slListEl.appendChild(item);
+    links.forEach((l, i) => {
+      const fav = l.favicon || faviconUrl(getDomain(l.url));
+      const row = document.createElement("div");
+      row.className = "item-row";
+      row.innerHTML =
+        '<img class="item-favicon" src="' + fav + '" alt="">' +
+        '<div class="item-info"><a href="' + l.url + '" target="_blank" class="item-title">' + (l.title || l.url) + '</a>' +
+        '<span class="item-url">' + l.url + '</span></div>' +
+        '<button class="item-remove" data-i="' + i + '">Remove</button>';
+      slList.appendChild(row);
     });
 
-    slListEl.querySelectorAll(".video-remove-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        const idx = parseInt(e.target.dataset.index, 10);
-        const lnks = loadSavedLinks();
-        lnks.splice(idx, 1);
-        saveSavedLinks(lnks);
-        renderSavedLinks();
-      });
-    });
+    slList.querySelectorAll(".item-remove").forEach(b => b.addEventListener("click", (e) => {
+      const arr = loadLinks(); arr.splice(+e.target.dataset.i, 1); saveLinks(arr); renderLinks();
+    }));
   }
 
-  renderSavedLinks();
+  initCollapsible("saved-links-toggle", "saved-links-panel", "sl-arrow", "slOpen");
+  renderLinks();
 
-  // Helper used by both tab manager and saved links (needs to be available early)
-  function getDomain(url) {
-    try {
-      return new URL(url).hostname;
-    } catch {
-      return url || "(unknown)";
-    }
-  }
+  /* ═══════════════════════════════════════════
+     Tab Manager
+     ═══════════════════════════════════════════ */
+  let allTabs = [];
+  let tmView  = "domain";
 
-  // ── Tab Manager ─────────────────────────────────────────────────────
-  const tmToggleBtn = document.getElementById("tab-manager-toggle");
-  const tmPanel = document.getElementById("tab-manager-panel");
-  const tmArrow = document.getElementById("tab-toggle-arrow");
   const tmContent = document.getElementById("tm-content");
-  const tmSearch = document.getElementById("tm-search");
-  const tmTotalCount = document.getElementById("tab-total-count");
+  const tmSearch  = document.getElementById("tm-search");
+  const tmCount   = document.getElementById("tab-total-count");
   const tmViewBtns = document.querySelectorAll(".tm-view-btn");
 
-  let currentView = "domain";
-  let allTabs = [];
+  const tm = initCollapsible("tab-manager-toggle", "tab-manager-panel", "tab-toggle-arrow", "tmOpen", loadTabs);
 
-  // Collapsible state
-  const tmWasOpen = localStorage.getItem("tabManagerOpen") === "true";
-  if (tmWasOpen) {
-    tmPanel.classList.add("open");
-    tmArrow.classList.add("open");
-  }
+  tmViewBtns.forEach(b => b.addEventListener("click", () => {
+    tmViewBtns.forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    tmView = b.dataset.view;
+    renderTM();
+  }));
+  tmSearch.addEventListener("input", renderTM);
 
-  tmToggleBtn.addEventListener("click", () => {
-    const isOpen = tmPanel.classList.toggle("open");
-    tmArrow.classList.toggle("open");
-    localStorage.setItem("tabManagerOpen", isOpen);
-    if (isOpen) loadTabs();
-  });
-
-  // View switcher
-  tmViewBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      tmViewBtns.forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-      currentView = btn.dataset.view;
-      renderTabs();
-    });
-  });
-
-  // Search filter
-  tmSearch.addEventListener("input", () => {
-    renderTabs();
-  });
-
-  // Jump to tab
-  function jumpToTab(tabId, windowId) {
+  function jumpToTab(tabId, winId) {
     chrome.tabs.update(tabId, { active: true });
-    chrome.windows.update(windowId, { focused: true });
+    chrome.windows.update(winId, { focused: true });
   }
 
-  // Human-readable time ago
-  function timeAgo(timestamp) {
-    if (!timestamp) return "";
-    const diff = Date.now() - timestamp;
-    const secs = Math.floor(diff / 1000);
-    if (secs < 60) return "just now";
-    const mins = Math.floor(secs / 60);
-    if (mins < 60) return `${mins}m ago`;
-    const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    if (days < 30) return `${days}d ago`;
-    const months = Math.floor(days / 30);
-    return `${months}mo ago`;
-  }
-
-  // Age class for colour coding
-  function ageClass(timestamp) {
-    if (!timestamp) return "";
-    const hours = (Date.now() - timestamp) / 1000 / 60 / 60;
-    if (hours > 72) return "very-old";
-    if (hours > 24) return "old";
-    return "";
-  }
-
-  // Check if a URL is a YouTube video
-  function isYouTubeUrl(url) {
-    return /(?:youtube\.com\/(?:watch|embed|shorts)|youtu\.be\/)/.test(url || "");
-  }
-
-  // Save a tab to the appropriate list (YouTube → Watch Later, else → Saved Links)
   function saveTabForLater(tab, btn) {
-    const url = tab.url;
-    if (isYouTubeUrl(url)) {
-      const videoId = extractVideoId(url);
-      if (videoId) {
-        const videos = loadVideos();
-        if (!videos.some((v) => v.id === videoId)) {
-          videos.unshift({ id: videoId, title: tab.title || "", addedAt: Date.now() });
-          saveVideos(videos);
-          renderVideos();
-        }
-      }
+    if (isYouTubeUrl(tab.url)) {
+      const vid = extractVideoId(tab.url);
+      if (vid) { const arr = loadVideos(); if (!arr.some(v => v.id === vid)) { arr.unshift({ id: vid, title: tab.title || "", addedAt: Date.now() }); saveVideos(arr); renderVideos(); } }
     } else {
-      const links = loadSavedLinks();
-      if (!links.some((l) => l.url === url)) {
-        links.unshift({ url, title: tab.title || url, favicon: tab.favIconUrl || "", addedAt: Date.now() });
-        saveSavedLinks(links);
-        renderSavedLinks();
-      }
+      const arr = loadLinks();
+      if (!arr.some(l => l.url === tab.url)) { arr.unshift({ url: tab.url, title: tab.title || tab.url, favicon: tab.favIconUrl || "", addedAt: Date.now() }); saveLinks(arr); renderLinks(); }
     }
-    if (btn) {
-      btn.textContent = "Saved";
-      btn.classList.add("saved");
-    }
+    if (btn) { btn.textContent = "Saved"; btn.classList.add("saved"); }
   }
 
-  // Build one tab row element
   function buildTabRow(tab, extras) {
     const row = document.createElement("div");
     row.className = "tm-tab-row" + (tab.active ? " active-tab" : "");
 
-    const favicon = tab.favIconUrl
-      ? `<img class="tm-tab-favicon" src="${tab.favIconUrl}" alt="">`
-      : `<img class="tm-tab-favicon" src="https://www.google.com/s2/favicons?domain=${getDomain(tab.url)}&sz=32" alt="">`;
-
+    const fav = tab.favIconUrl || faviconUrl(getDomain(tab.url));
     let badges = "";
-    if (tab.pinned) badges += `<span class="tm-tab-badge tm-badge-pinned">pinned</span>`;
-    if (tab.active) badges += `<span class="tm-tab-badge tm-badge-active">active</span>`;
-    if (extras?.duplicate) badges += `<span class="tm-tab-badge tm-badge-duplicate">dup</span>`;
+    if (tab.pinned) badges += '<span class="tm-tab-badge tm-badge-pinned">pinned</span>';
+    if (tab.active) badges += '<span class="tm-tab-badge tm-badge-active">active</span>';
+    if (extras?.duplicate) badges += '<span class="tm-tab-badge tm-badge-dup">dup</span>';
 
     let age = "";
     if (extras?.showAge && tab.lastAccessed) {
-      const cls = ageClass(tab.lastAccessed);
-      age = `<span class="tm-tab-age ${cls}">${timeAgo(tab.lastAccessed)}</span>`;
+      age = '<span class="tm-tab-age ' + ageClass(tab.lastAccessed) + '">' + timeAgo(tab.lastAccessed) + '</span>';
     }
 
-    // Check if already saved
-    const alreadySaved = isYouTubeUrl(tab.url)
-      ? loadVideos().some((v) => v.id === extractVideoId(tab.url))
-      : loadSavedLinks().some((l) => l.url === tab.url);
+    const already = isYouTubeUrl(tab.url)
+      ? loadVideos().some(v => v.id === extractVideoId(tab.url))
+      : loadLinks().some(l => l.url === tab.url);
 
     const title = tab.title || tab.url || "(untitled)";
-    row.innerHTML = `${favicon}<span class="tm-tab-title" title="${title}">${title}</span>${badges}${age}<button class="tm-tab-save${alreadySaved ? " saved" : ""}">${alreadySaved ? "Saved" : "Save"}</button>`;
+    row.innerHTML = '<img class="tm-tab-favicon" src="' + fav + '" alt="">' +
+      '<span class="tm-tab-title" title="' + title.replace(/"/g, '&quot;') + '">' + title + '</span>' +
+      badges + age +
+      '<button class="tm-tab-save' + (already ? " saved" : "") + '">' + (already ? "Saved" : "Save") + '</button>';
 
-    // Click on the row (not the save button) → jump to tab
-    row.addEventListener("click", (e) => {
-      if (e.target.closest(".tm-tab-save")) return;
-      jumpToTab(tab.id, tab.windowId);
-    });
-
-    // Save button
-    row.querySelector(".tm-tab-save").addEventListener("click", (e) => {
-      e.stopPropagation();
-      saveTabForLater(tab, e.target);
-    });
-
+    row.addEventListener("click", (e) => { if (!e.target.closest(".tm-tab-save")) jumpToTab(tab.id, tab.windowId); });
+    row.querySelector(".tm-tab-save").addEventListener("click", (e) => { e.stopPropagation(); saveTabForLater(tab, e.target); });
     return row;
   }
 
-  // ── Domain view ──────────────────────────────────────────────────
   function renderDomainView(tabs) {
-    // Group by domain
-    const groups = {};
-    tabs.forEach((tab) => {
-      const domain = getDomain(tab.url);
-      if (!groups[domain]) groups[domain] = [];
-      groups[domain].push(tab);
-    });
+    const groups = {}; const urlC = {};
+    tabs.forEach(t => { const d = getDomain(t.url); (groups[d] = groups[d] || []).push(t); urlC[t.url] = (urlC[t.url] || 0) + 1; });
 
-    // Find duplicate URLs (exact match)
-    const urlCounts = {};
-    tabs.forEach((tab) => {
-      const u = tab.url;
-      urlCounts[u] = (urlCounts[u] || 0) + 1;
-    });
-
-    // Sort domains: duplicates first, then by tab count descending, then alpha
     const sorted = Object.entries(groups).sort((a, b) => {
-      const aHasDup = a[1].some((t) => urlCounts[t.url] > 1) ? 1 : 0;
-      const bHasDup = b[1].some((t) => urlCounts[t.url] > 1) ? 1 : 0;
-      if (bHasDup !== aHasDup) return bHasDup - aHasDup;
+      const ad = a[1].some(t => urlC[t.url] > 1) ? 1 : 0;
+      const bd = b[1].some(t => urlC[t.url] > 1) ? 1 : 0;
+      if (bd !== ad) return bd - ad;
       if (b[1].length !== a[1].length) return b[1].length - a[1].length;
       return a[0].localeCompare(b[0]);
     });
 
     const frag = document.createDocumentFragment();
+    sorted.forEach(([domain, dtabs]) => {
+      const hasDup = dtabs.some(t => urlC[t.url] > 1);
+      const g = document.createElement("div"); g.className = "tm-domain-group";
+      const hdr = document.createElement("div"); hdr.className = "tm-domain-header";
+      hdr.innerHTML = '<img class="tm-domain-favicon" src="' + faviconUrl(domain) + '" alt="">' +
+        '<span class="tm-domain-name">' + domain + '</span>' +
+        '<span class="tm-domain-count' + (hasDup ? " dup" : "") + '">' + dtabs.length + (hasDup ? " (dupes)" : "") + '</span>' +
+        '<span class="tm-domain-arrow">&#9660;</span>';
 
-    sorted.forEach(([domain, domainTabs]) => {
-      const hasDuplicates = domainTabs.some((t) => urlCounts[t.url] > 1);
+      const list = document.createElement("div"); list.className = "tm-domain-tabs";
+      dtabs.forEach(t => list.appendChild(buildTabRow(t, { duplicate: urlC[t.url] > 1 })));
 
-      const group = document.createElement("div");
-      group.className = "tm-domain-group";
+      hdr.addEventListener("click", () => { list.classList.toggle("open"); hdr.querySelector(".tm-domain-arrow").classList.toggle("open"); });
+      if (hasDup) { list.classList.add("open"); hdr.querySelector(".tm-domain-arrow").classList.add("open"); }
 
-      const header = document.createElement("div");
-      header.className = "tm-domain-header";
-      header.innerHTML = `
-        <img class="tm-domain-favicon" src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" alt="">
-        <span class="tm-domain-name">${domain}</span>
-        <span class="tm-domain-count ${hasDuplicates ? "duplicate" : ""}">${domainTabs.length}${hasDuplicates ? " (dupes)" : ""}</span>
-        <span class="tm-domain-arrow">&#9660;</span>
-      `;
-
-      const tabList = document.createElement("div");
-      tabList.className = "tm-domain-tabs";
-
-      domainTabs.forEach((tab) => {
-        const isDup = urlCounts[tab.url] > 1;
-        tabList.appendChild(buildTabRow(tab, { duplicate: isDup }));
-      });
-
-      header.addEventListener("click", () => {
-        tabList.classList.toggle("open");
-        header.querySelector(".tm-domain-arrow").classList.toggle("open");
-      });
-
-      // Auto-expand groups with duplicates
-      if (hasDuplicates) {
-        tabList.classList.add("open");
-        header.querySelector(".tm-domain-arrow").classList.add("open");
-      }
-
-      group.appendChild(header);
-      group.appendChild(tabList);
-      frag.appendChild(group);
+      g.appendChild(hdr); g.appendChild(list); frag.appendChild(g);
     });
 
-    tmContent.innerHTML = "";
-    if (sorted.length === 0) {
-      tmContent.innerHTML = `<div class="tm-empty">No tabs found.</div>`;
-    } else {
-      tmContent.appendChild(frag);
-    }
+    tmContent.innerHTML = sorted.length ? "" : '<div class="tm-empty">No tabs found.</div>';
+    if (sorted.length) tmContent.appendChild(frag);
   }
 
-  // ── Window / Age view ────────────────────────────────────────────
   function renderWindowView(tabs) {
-    // Group by windowId
-    const windows = {};
-    tabs.forEach((tab) => {
-      if (!windows[tab.windowId]) windows[tab.windowId] = [];
-      windows[tab.windowId].push(tab);
+    const wins = {};
+    tabs.forEach(t => (wins[t.windowId] = wins[t.windowId] || []).push(t));
+    const sorted = Object.entries(wins).sort((a, b) => {
+      return Math.min(...a[1].map(t => t.lastAccessed || Date.now())) - Math.min(...b[1].map(t => t.lastAccessed || Date.now()));
     });
-
-    // Sort windows by their oldest tab (window with the oldest tab first)
-    const sortedWindows = Object.entries(windows).sort((a, b) => {
-      const oldestA = Math.min(...a[1].map((t) => t.lastAccessed || Date.now()));
-      const oldestB = Math.min(...b[1].map((t) => t.lastAccessed || Date.now()));
-      return oldestA - oldestB;
-    });
-
-    // Within each window, sort tabs oldest-accessed first
-    sortedWindows.forEach(([, winTabs]) => {
-      winTabs.sort((a, b) => (a.lastAccessed || 0) - (b.lastAccessed || 0));
-    });
+    sorted.forEach(([, wt]) => wt.sort((a, b) => (a.lastAccessed || 0) - (b.lastAccessed || 0)));
 
     const frag = document.createDocumentFragment();
-
-    sortedWindows.forEach(([winId, winTabs], i) => {
-      const group = document.createElement("div");
-      group.className = "tm-window-group";
-
-      const header = document.createElement("div");
-      header.className = "tm-window-header";
-
-      const current = winTabs.some((t) => t.active && t.windowId === parseInt(winId));
-      const label = current ? `Window ${i + 1} (current)` : `Window ${i + 1}`;
-
-      header.innerHTML = `
-        <span class="tm-window-label">${label}</span>
-        <span class="tm-window-count">${winTabs.length} tab${winTabs.length !== 1 ? "s" : ""}</span>
-      `;
-
-      group.appendChild(header);
-
-      winTabs.forEach((tab) => {
-        group.appendChild(buildTabRow(tab, { showAge: true }));
-      });
-
-      frag.appendChild(group);
+    sorted.forEach(([wid, wt], i) => {
+      const g = document.createElement("div"); g.className = "tm-window-group";
+      const cur = wt.some(t => t.active);
+      const hdr = document.createElement("div"); hdr.className = "tm-window-header";
+      hdr.innerHTML = '<span class="tm-window-label">Window ' + (i + 1) + (cur ? " (current)" : "") + '</span><span class="tm-window-count">' + wt.length + ' tab' + (wt.length !== 1 ? "s" : "") + '</span>';
+      g.appendChild(hdr);
+      wt.forEach(t => g.appendChild(buildTabRow(t, { showAge: true })));
+      frag.appendChild(g);
     });
 
-    tmContent.innerHTML = "";
-    if (sortedWindows.length === 0) {
-      tmContent.innerHTML = `<div class="tm-empty">No tabs found.</div>`;
-    } else {
-      tmContent.appendChild(frag);
-    }
+    tmContent.innerHTML = sorted.length ? "" : '<div class="tm-empty">No tabs found.</div>';
+    if (sorted.length) tmContent.appendChild(frag);
   }
 
-  // ── Load & render ────────────────────────────────────────────────
-  function renderTabs() {
-    const query = tmSearch.value.trim().toLowerCase();
+  function renderTM() {
+    const q = tmSearch.value.trim().toLowerCase();
     let filtered = allTabs;
-
-    if (query) {
-      filtered = allTabs.filter((tab) => {
-        const title = (tab.title || "").toLowerCase();
-        const url = (tab.url || "").toLowerCase();
-        return title.includes(query) || url.includes(query);
-      });
-    }
-
-    if (currentView === "domain") {
-      renderDomainView(filtered);
-    } else {
-      renderWindowView(filtered);
-    }
+    if (q) filtered = allTabs.filter(t => ((t.title || "") + " " + (t.url || "")).toLowerCase().includes(q));
+    if (tmView === "domain") renderDomainView(filtered); else renderWindowView(filtered);
   }
 
   function loadTabs() {
-    if (!chrome?.tabs?.query) {
-      tmContent.innerHTML = `<div class="tm-empty">Tab API not available. Make sure the extension has the "tabs" permission.</div>`;
-      return;
-    }
+    if (!chrome?.tabs?.query) { tmContent.innerHTML = '<div class="tm-empty">Tab API not available.</div>'; return; }
+    chrome.tabs.query({}, tabs => { allTabs = tabs; tmCount.textContent = tabs.length; renderTM(); });
+  }
 
-    chrome.tabs.query({}, (tabs) => {
-      allTabs = tabs;
-      tmTotalCount.textContent = tabs.length;
-      renderTabs();
+  // Always load tab count on launch
+  if (chrome?.tabs?.query) {
+    chrome.tabs.query({}, tabs => { allTabs = tabs; tmCount.textContent = tabs.length; if (tm.isOpen()) renderTM(); });
+  }
+
+  /* ═══════════════════════════════════════════
+     Global Search
+     ═══════════════════════════════════════════ */
+  const searchInput   = document.getElementById("global-search");
+  const searchResults = document.getElementById("search-results");
+
+  searchInput.addEventListener("input", () => {
+    const q = searchInput.value.trim().toLowerCase();
+    if (!q) { searchResults.hidden = true; return; }
+
+    const results = [];
+
+    // Tabs
+    allTabs.forEach(t => {
+      if (((t.title || "") + " " + (t.url || "")).toLowerCase().includes(q)) {
+        results.push({ type: "tab", title: t.title || t.url, url: t.url, favicon: t.favIconUrl || faviconUrl(getDomain(t.url)), ts: t.lastAccessed || 0, tab: t });
+      }
+    });
+
+    // Saved links
+    loadLinks().forEach(l => {
+      if (((l.title || "") + " " + l.url).toLowerCase().includes(q)) {
+        results.push({ type: "link", title: l.title || l.url, url: l.url, favicon: l.favicon || faviconUrl(getDomain(l.url)), ts: l.addedAt || 0 });
+      }
+    });
+
+    // Watch later
+    loadVideos().forEach(v => {
+      const url = "https://www.youtube.com/watch?v=" + v.id;
+      if (((v.title || "") + " " + url).toLowerCase().includes(q)) {
+        results.push({ type: "video", title: v.title || url, url, favicon: faviconUrl("youtube.com"), ts: v.addedAt || 0 });
+      }
+    });
+
+    // Sort by most recent first
+    results.sort((a, b) => b.ts - a.ts);
+
+    searchResults.innerHTML = "";
+    if (results.length === 0) {
+      searchResults.innerHTML = '<div class="sr-empty">No results found.</div>';
+    } else {
+      results.slice(0, 50).forEach(r => {
+        const row = document.createElement("div");
+        row.className = "sr-row";
+        const badgeLabel = r.type === "tab" ? "Tab" : r.type === "link" ? "Saved" : "YouTube";
+        row.innerHTML = '<img class="sr-favicon" src="' + r.favicon + '" alt="">' +
+          '<span class="sr-title">' + r.title + '</span>' +
+          '<span class="sr-badge">' + badgeLabel + '</span>' +
+          (r.ts ? '<span class="sr-age">' + timeAgo(r.ts) + '</span>' : '');
+
+        row.addEventListener("click", () => {
+          if (r.type === "tab" && r.tab) { jumpToTab(r.tab.id, r.tab.windowId); }
+          else { window.open(r.url, "_blank"); }
+          searchResults.hidden = true;
+          searchInput.value = "";
+        });
+        searchResults.appendChild(row);
+      });
+    }
+    searchResults.hidden = false;
+  });
+
+  // Close search on click outside
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".search-wrap")) searchResults.hidden = true;
+  });
+
+  // Close search on Escape
+  searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { searchResults.hidden = true; searchInput.blur(); }
+  });
+
+  /* ═══════════════════════════════════════════
+     Export / Import Tabs
+     ═══════════════════════════════════════════ */
+  initCollapsible("ei-toggle", "ei-panel", "ei-arrow", "eiOpen");
+
+  document.getElementById("export-btn").addEventListener("click", () => {
+    if (!chrome?.tabs?.query) return;
+    chrome.tabs.query({}, tabs => {
+      const wins = {};
+      tabs.forEach(t => {
+        (wins[t.windowId] = wins[t.windowId] || []).push({ url: t.url, title: t.title, pinned: t.pinned });
+      });
+      const data = {
+        exportedAt: new Date().toISOString(),
+        source: "AI Tools New Tab",
+        windows: Object.entries(wins).map(([id, tabs], i) => ({ label: "Window " + (i + 1), tabs }))
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "tabs-export-" + new Date().toISOString().slice(0, 10) + ".json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+  });
+
+  document.getElementById("import-input").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result);
+        renderImportPreview(data);
+      } catch { alert("Invalid JSON file."); }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  });
+
+  function renderImportPreview(data) {
+    const container = document.getElementById("import-preview");
+    container.innerHTML = "";
+    if (!data.windows || !data.windows.length) { container.innerHTML = '<p class="empty-msg">No windows found in file.</p>'; return; }
+
+    data.windows.forEach((win, wi) => {
+      const div = document.createElement("div"); div.className = "ip-window";
+
+      const hdr = document.createElement("div"); hdr.className = "ip-window-header";
+      hdr.innerHTML = '<span>' + (win.label || "Window " + (wi + 1)) + ' (' + win.tabs.length + ' tabs)</span>';
+
+      const openBtn = document.createElement("button");
+      openBtn.className = "ip-open-btn";
+      openBtn.textContent = "Open Window";
+      openBtn.addEventListener("click", () => {
+        if (!chrome?.windows?.create) { window.open(win.tabs[0]?.url); return; }
+        chrome.windows.create({ url: win.tabs.map(t => t.url), focused: true });
+        openBtn.textContent = "Opened";
+        openBtn.disabled = true;
+        openBtn.style.opacity = "0.5";
+      });
+      hdr.appendChild(openBtn);
+      div.appendChild(hdr);
+
+      win.tabs.forEach(t => {
+        const row = document.createElement("div"); row.className = "ip-tab";
+        row.innerHTML = '<img class="ip-tab-favicon" src="' + faviconUrl(getDomain(t.url)) + '" alt="">' +
+          '<span class="ip-tab-title">' + (t.title || t.url) + '</span>';
+        div.appendChild(row);
+      });
+
+      container.appendChild(div);
     });
   }
 
-  // Load on startup if panel is already open
-  if (tmWasOpen) loadTabs();
 });

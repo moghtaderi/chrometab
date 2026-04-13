@@ -1,167 +1,188 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>New Tab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+  <!-- Theme toggle -->
+  <button id="theme-toggle" class="theme-toggle" title="Toggle light / dark theme">
+    <svg id="icon-sun" class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    <svg id="icon-moon" class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
+  </button>
+
   <div class="container">
 
-    <!-- Greeting & Clocks -->
-    <section class="section section-hero">
-      <p class="greeting" id="greeting"></p>
-      <div class="clocks">
-        <div class="clock">
-          <span class="clock-time" id="clock-pt"></span>
-          <span class="clock-label">Pacific</span>
+    <!-- Greeting -->
+    <p class="greeting" id="greeting"></p>
+
+    <!-- Clocks -->
+    <div class="clocks" id="clocks">
+      <div class="clock-card clock-card--pacific">
+        <span class="clock-hm" id="clock-pt-hm"></span>
+        <div class="clock-meta">
+          <span class="clock-sc" id="clock-pt-sc"></span>
+          <span class="clock-ap" id="clock-pt-ap"></span>
         </div>
-        <div class="clock-divider"></div>
-        <div class="clock">
-          <span class="clock-time" id="clock-et"></span>
-          <span class="clock-label">Eastern</span>
-        </div>
-        <div class="clock-divider"></div>
-        <div class="clock">
-          <span class="clock-time" id="clock-tehran"></span>
-          <span class="clock-label">Tehran</span>
-        </div>
+        <span class="clock-tz">Pacific</span>
       </div>
-      <p class="clock-date" id="clock-date"></p>
-    </section>
+
+      <div class="clock-sep"></div>
+
+      <div class="clock-card clock-card--eastern">
+        <span class="clock-hm" id="clock-et-hm"></span>
+        <div class="clock-meta">
+          <span class="clock-sc" id="clock-et-sc"></span>
+          <span class="clock-ap" id="clock-et-ap"></span>
+        </div>
+        <span class="clock-tz">Eastern</span>
+      </div>
+
+      <div class="clock-sep"></div>
+
+      <div class="clock-card clock-card--tehran">
+        <span class="clock-hm" id="clock-th-hm"></span>
+        <div class="clock-meta">
+          <span class="clock-sc" id="clock-th-sc"></span>
+          <span class="clock-ap" id="clock-th-ap"></span>
+        </div>
+        <span class="clock-tz">Tehran</span>
+      </div>
+    </div>
+
+    <p class="date-line" id="date-line"></p>
+
+    <!-- Global Search -->
+    <div class="search-wrap">
+      <div class="search-icon-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      </div>
+      <input type="text" id="global-search" class="search-input" placeholder="Search tabs, saved links, videos..." autocomplete="off">
+      <div id="search-results" class="search-results" hidden></div>
+    </div>
 
     <!-- Primary AIs -->
     <section class="section">
       <div class="section-header">
-        <h1 class="title">AI Tools</h1>
-        <button id="launch-all-primary" class="launch-all-btn">Launch All</button>
+        <h2 class="section-title">AI Tools</h2>
+        <button class="launch-all-btn" data-group="primary">Launch All</button>
       </div>
-      <div class="grid grid-4">
-        <a href="https://claude.ai" class="card card-claude" data-group="primary">
-          <img class="card-logo" src="https://www.google.com/s2/favicons?domain=claude.ai&sz=128" alt="Claude logo">
-          <span class="card-label">Claude</span>
-        </a>
-        <a href="https://chatgpt.com" class="card card-chatgpt" data-group="primary">
-          <img class="card-logo" src="https://www.google.com/s2/favicons?domain=chatgpt.com&sz=128" alt="ChatGPT logo">
-          <span class="card-label">ChatGPT</span>
-        </a>
-        <a href="https://gemini.google.com" class="card card-gemini" data-group="primary">
-          <img class="card-logo" src="https://www.google.com/s2/favicons?domain=gemini.google.com&sz=128" alt="Gemini logo">
-          <span class="card-label">Gemini</span>
-        </a>
-        <a href="https://grok.com" class="card card-grok" data-group="primary">
-          <img class="card-logo" src="https://www.google.com/s2/favicons?domain=grok.com&sz=128" alt="Grok logo">
-          <span class="card-label">Grok</span>
-        </a>
-      </div>
+      <div class="card-grid" id="grid-primary" data-group="primary"></div>
     </section>
 
     <!-- Secondary AIs -->
     <section class="section">
       <div class="section-header">
-        <h2 class="title title-secondary">Secondary</h2>
-        <button id="launch-all-secondary" class="launch-all-btn launch-all-btn-secondary">Launch All</button>
+        <h2 class="section-title section-title--sm">Secondary</h2>
+        <button class="launch-all-btn" data-group="secondary">Launch All</button>
       </div>
-      <div class="grid grid-4">
-        <a href="https://chat.deepseek.com" class="card card-deepseek" data-group="secondary">
-          <img class="card-logo" src="https://www.google.com/s2/favicons?domain=chat.deepseek.com&sz=128" alt="DeepSeek logo">
-          <span class="card-label">DeepSeek</span>
-        </a>
-        <a href="https://agent.minimax.io/" class="card card-minimax" data-group="secondary">
-          <img class="card-logo" src="https://www.google.com/s2/favicons?domain=agent.minimax.io&sz=128" alt="MiniMax logo">
-          <span class="card-label">MiniMax</span>
-        </a>
-        <a href="https://chat.qwen.ai" class="card card-qwen" data-group="secondary">
-          <img class="card-logo" src="https://www.google.com/s2/favicons?domain=chat.qwen.ai&sz=128" alt="Qwen logo">
-          <span class="card-label">Qwen</span>
-        </a>
-        <a href="https://z.ai" class="card card-zai" data-group="secondary">
-          <img class="card-logo" src="https://www.google.com/s2/favicons?domain=z.ai&sz=128" alt="Z AI logo">
-          <span class="card-label">Z AI</span>
-        </a>
-      </div>
+      <div class="card-grid" id="grid-secondary" data-group="secondary"></div>
     </section>
 
-    <!-- Notebook LM -->
+    <!-- Tools -->
     <section class="section">
       <div class="section-header">
-        <h2 class="title title-secondary">Tools</h2>
+        <h2 class="section-title section-title--sm">Tools</h2>
       </div>
-      <div class="grid grid-single">
-        <a href="https://notebooklm.google.com/" class="card card-notebooklm">
-          <img class="card-logo" src="https://www.google.com/s2/favicons?domain=notebooklm.google.com&sz=128" alt="NotebookLM logo">
-          <span class="card-label">NotebookLM</span>
-        </a>
-      </div>
+      <div class="card-grid card-grid--auto" id="grid-tools" data-group="tools"></div>
     </section>
 
     <!-- Tab Manager -->
     <section class="section">
-      <button id="tab-manager-toggle" class="collapsible-toggle">
-        <span class="toggle-title">Tab Manager</span>
-        <span class="toggle-count" id="tab-total-count">0</span>
-        <span class="toggle-arrow" id="tab-toggle-arrow">&#9660;</span>
+      <button id="tab-manager-toggle" class="collapse-toggle">
+        <span>Tab Manager</span>
+        <span class="badge" id="tab-total-count">0</span>
+        <span class="collapse-arrow" id="tab-toggle-arrow">&#9660;</span>
       </button>
-
-      <div id="tab-manager-panel" class="collapsible-panel">
-        <div class="collapsible-inner">
-          <!-- View switcher -->
+      <div id="tab-manager-panel" class="collapse-panel">
+        <div class="collapse-inner">
           <div class="tm-view-switcher">
             <button class="tm-view-btn active" data-view="domain">By Domain</button>
             <button class="tm-view-btn" data-view="window">By Window / Age</button>
           </div>
-
-          <!-- Search / filter -->
-          <input type="text" id="tm-search" class="video-input tm-search" placeholder="Filter tabs...">
-
-          <!-- Content area -->
+          <input type="text" id="tm-search" class="text-input" placeholder="Filter tabs...">
           <div id="tm-content" class="tm-content"></div>
         </div>
       </div>
     </section>
 
-    <!-- Watch Later YouTube Videos -->
-    <section class="section section-watch-later">
-      <button id="watch-later-toggle" class="collapsible-toggle">
-        <span class="toggle-title">Watch Later</span>
-        <span class="toggle-count" id="video-count">0</span>
-        <span class="toggle-arrow" id="toggle-arrow">&#9660;</span>
+    <!-- Watch Later -->
+    <section class="section">
+      <button id="watch-later-toggle" class="collapse-toggle">
+        <span>Watch Later</span>
+        <span class="badge" id="video-count">0</span>
+        <span class="collapse-arrow" id="wl-arrow">&#9660;</span>
       </button>
-
-      <div id="watch-later-panel" class="collapsible-panel">
-        <div class="collapsible-inner">
-          <!-- Add video form -->
-          <form id="add-video-form" class="add-video-form">
-            <input type="text" id="video-url-input" class="video-input" placeholder="Paste a YouTube URL and press Enter">
-            <button type="submit" class="video-add-btn">Add</button>
+      <div id="watch-later-panel" class="collapse-panel">
+        <div class="collapse-inner">
+          <form id="add-video-form" class="inline-form">
+            <input type="text" id="video-url-input" class="text-input" placeholder="Paste a YouTube URL and press Enter">
+            <button type="submit" class="btn-sm">Add</button>
           </form>
-
-          <!-- Video list -->
-          <div id="video-list" class="video-list"></div>
-
-          <p class="video-empty" id="video-empty">No videos saved yet. Paste a YouTube link above to get started.</p>
+          <div id="video-list" class="item-list"></div>
+          <p class="empty-msg" id="video-empty">No videos saved yet.</p>
         </div>
       </div>
     </section>
 
     <!-- Saved Links -->
     <section class="section">
-      <button id="saved-links-toggle" class="collapsible-toggle">
-        <span class="toggle-title">Saved Links</span>
-        <span class="toggle-count" id="saved-links-count">0</span>
-        <span class="toggle-arrow" id="saved-links-arrow">&#9660;</span>
+      <button id="saved-links-toggle" class="collapse-toggle">
+        <span>Saved Links</span>
+        <span class="badge" id="saved-links-count">0</span>
+        <span class="collapse-arrow" id="sl-arrow">&#9660;</span>
       </button>
+      <div id="saved-links-panel" class="collapse-panel">
+        <div class="collapse-inner">
+          <div id="saved-links-list" class="item-list"></div>
+          <p class="empty-msg" id="saved-links-empty">No saved links yet. Use the Save button in Tab Manager.</p>
+        </div>
+      </div>
+    </section>
 
-      <div id="saved-links-panel" class="collapsible-panel">
-        <div class="collapsible-inner">
-          <div id="saved-links-list" class="saved-list"></div>
-          <p class="saved-empty" id="saved-links-empty">No saved links yet. Use the save button in the Tab Manager to bookmark tabs.</p>
+    <!-- Export / Import -->
+    <section class="section">
+      <button id="ei-toggle" class="collapse-toggle">
+        <span>Export / Import Tabs</span>
+        <span class="collapse-arrow" id="ei-arrow">&#9660;</span>
+      </button>
+      <div id="ei-panel" class="collapse-panel">
+        <div class="collapse-inner">
+          <p class="ei-desc">Export all open tabs as a JSON file to open them in another browser or restore later.</p>
+          <div class="ei-actions">
+            <button id="export-btn" class="btn-primary">Export All Tabs</button>
+            <label class="btn-primary btn-file-label">
+              Import Tabs
+              <input type="file" id="import-input" accept=".json" hidden>
+            </label>
+          </div>
+          <div id="import-preview"></div>
         </div>
       </div>
     </section>
 
   </div>
+
+  <!-- Add Card Modal -->
+  <div id="add-card-modal" class="modal-overlay" hidden>
+    <div class="modal">
+      <h3 class="modal-title">Add AI Tool</h3>
+      <input type="text" id="ac-name" class="text-input" placeholder="Name (e.g. Perplexity)">
+      <input type="url" id="ac-url" class="text-input" placeholder="URL (e.g. https://perplexity.ai)">
+      <input type="hidden" id="ac-group">
+      <div class="modal-actions">
+        <button id="ac-cancel" class="btn-sm btn-ghost">Cancel</button>
+        <button id="ac-save" class="btn-sm btn-primary">Add</button>
+      </div>
+    </div>
+  </div>
+
   <script src="newtab.js"></script>
 </body>
 </html>
