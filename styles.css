@@ -339,13 +339,18 @@ body {
 
 /* Collapsible panel */
 .collapsible-panel {
-  max-height: 0;
+  display: grid;
+  grid-template-rows: 0fr;
   overflow: hidden;
-  transition: max-height 0.35s ease;
+  transition: grid-template-rows 0.35s ease;
 }
 
 .collapsible-panel.open {
-  max-height: 2000px;
+  grid-template-rows: 1fr;
+}
+
+.collapsible-panel > .collapsible-inner {
+  overflow: hidden;
 }
 
 /* Add video form */
@@ -526,6 +531,25 @@ body {
 .tm-content {
   margin-top: 1rem;
   text-align: left;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.tm-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tm-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tm-content::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+
+.tm-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 
 /* Domain group */
@@ -705,11 +729,102 @@ body {
   margin-left: 0;
 }
 
+.tm-tab-save {
+  padding: 0.2rem 0.5rem;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: transparent;
+  color: #555;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.tm-tab-save:hover {
+  border-color: #d4845a;
+  color: #d4845a;
+}
+
+.tm-tab-save.saved {
+  border-color: #5ad470;
+  color: #5ad470;
+  pointer-events: none;
+}
+
 .tm-empty {
   text-align: center;
   padding: 2rem;
   color: #444;
   font-size: 0.8rem;
+}
+
+/* ---------- Saved Links ---------- */
+
+.saved-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #222;
+  border-radius: 10px;
+  background: #161616;
+  text-align: left;
+  transition: border-color 0.2s ease;
+}
+
+.saved-item:hover {
+  border-color: #d4845a;
+}
+
+.saved-favicon {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  border-radius: 4px;
+}
+
+.saved-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  overflow: hidden;
+}
+
+.saved-title {
+  color: #e0e0e0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.saved-title:hover {
+  color: #d4845a;
+}
+
+.saved-url-display {
+  color: #555;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.saved-list {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.saved-empty {
+  margin-top: 1.5rem;
+  font-size: 0.8rem;
+  color: #444;
 }
 
 /* Responsive */

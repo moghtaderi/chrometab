@@ -105,17 +105,19 @@
       </button>
 
       <div id="tab-manager-panel" class="collapsible-panel">
-        <!-- View switcher -->
-        <div class="tm-view-switcher">
-          <button class="tm-view-btn active" data-view="domain">By Domain</button>
-          <button class="tm-view-btn" data-view="window">By Window / Age</button>
+        <div class="collapsible-inner">
+          <!-- View switcher -->
+          <div class="tm-view-switcher">
+            <button class="tm-view-btn active" data-view="domain">By Domain</button>
+            <button class="tm-view-btn" data-view="window">By Window / Age</button>
+          </div>
+
+          <!-- Search / filter -->
+          <input type="text" id="tm-search" class="video-input tm-search" placeholder="Filter tabs...">
+
+          <!-- Content area -->
+          <div id="tm-content" class="tm-content"></div>
         </div>
-
-        <!-- Search / filter -->
-        <input type="text" id="tm-search" class="video-input tm-search" placeholder="Filter tabs...">
-
-        <!-- Content area -->
-        <div id="tm-content" class="tm-content"></div>
       </div>
     </section>
 
@@ -128,16 +130,34 @@
       </button>
 
       <div id="watch-later-panel" class="collapsible-panel">
-        <!-- Add video form -->
-        <form id="add-video-form" class="add-video-form">
-          <input type="text" id="video-url-input" class="video-input" placeholder="Paste a YouTube URL and press Enter">
-          <button type="submit" class="video-add-btn">Add</button>
-        </form>
+        <div class="collapsible-inner">
+          <!-- Add video form -->
+          <form id="add-video-form" class="add-video-form">
+            <input type="text" id="video-url-input" class="video-input" placeholder="Paste a YouTube URL and press Enter">
+            <button type="submit" class="video-add-btn">Add</button>
+          </form>
 
-        <!-- Video list -->
-        <div id="video-list" class="video-list"></div>
+          <!-- Video list -->
+          <div id="video-list" class="video-list"></div>
 
-        <p class="video-empty" id="video-empty">No videos saved yet. Paste a YouTube link above to get started.</p>
+          <p class="video-empty" id="video-empty">No videos saved yet. Paste a YouTube link above to get started.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Saved Links -->
+    <section class="section">
+      <button id="saved-links-toggle" class="collapsible-toggle">
+        <span class="toggle-title">Saved Links</span>
+        <span class="toggle-count" id="saved-links-count">0</span>
+        <span class="toggle-arrow" id="saved-links-arrow">&#9660;</span>
+      </button>
+
+      <div id="saved-links-panel" class="collapsible-panel">
+        <div class="collapsible-inner">
+          <div id="saved-links-list" class="saved-list"></div>
+          <p class="saved-empty" id="saved-links-empty">No saved links yet. Use the save button in the Tab Manager to bookmark tabs.</p>
+        </div>
       </div>
     </section>
 

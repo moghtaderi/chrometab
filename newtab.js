@@ -247,6 +247,83 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initial render
   renderVideos();
 
+  // ── Saved Links ─────────────────────────────────────────────────────
+  const SAVED_LINKS_KEY = "savedLinks";
+  const slToggleBtn = document.getElementById("saved-links-toggle");
+  const slPanel = document.getElementById("saved-links-panel");
+  const slArrow = document.getElementById("saved-links-arrow");
+  const slListEl = document.getElementById("saved-links-list");
+  const slEmptyEl = document.getElementById("saved-links-empty");
+  const slCountEl = document.getElementById("saved-links-count");
+
+  const slWasOpen = localStorage.getItem("savedLinksOpen") === "true";
+  if (slWasOpen) {
+    slPanel.classList.add("open");
+    slArrow.classList.add("open");
+  }
+
+  slToggleBtn.addEventListener("click", () => {
+    const isOpen = slPanel.classList.toggle("open");
+    slArrow.classList.toggle("open");
+    localStorage.setItem("savedLinksOpen", isOpen);
+  });
+
+  function loadSavedLinks() {
+    try {
+      return JSON.parse(localStorage.getItem(SAVED_LINKS_KEY)) || [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveSavedLinks(links) {
+    localStorage.setItem(SAVED_LINKS_KEY, JSON.stringify(links));
+  }
+
+  function renderSavedLinks() {
+    const links = loadSavedLinks();
+    slListEl.innerHTML = "";
+    slCountEl.textContent = links.length;
+    slEmptyEl.style.display = links.length === 0 ? "block" : "none";
+
+    links.forEach((link, index) => {
+      const domain = getDomain(link.url);
+      const faviconSrc = link.favicon || `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+      const item = document.createElement("div");
+      item.className = "saved-item";
+      item.innerHTML = `
+        <img class="saved-favicon" src="${faviconSrc}" alt="">
+        <div class="saved-info">
+          <a href="${link.url}" target="_blank" class="saved-title">${link.title || link.url}</a>
+          <span class="saved-url-display">${link.url}</span>
+        </div>
+        <button class="video-remove-btn" data-index="${index}">Remove</button>
+      `;
+      slListEl.appendChild(item);
+    });
+
+    slListEl.querySelectorAll(".video-remove-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const idx = parseInt(e.target.dataset.index, 10);
+        const lnks = loadSavedLinks();
+        lnks.splice(idx, 1);
+        saveSavedLinks(lnks);
+        renderSavedLinks();
+      });
+    });
+  }
+
+  renderSavedLinks();
+
+  // Helper used by both tab manager and saved links (needs to be available early)
+  function getDomain(url) {
+    try {
+      return new URL(url).hostname;
+    } catch {
+      return url || "(unknown)";
+    }
+  }
+
   // ── Tab Manager ─────────────────────────────────────────────────────
   const tmToggleBtn = document.getElementById("tab-manager-toggle");
   const tmPanel = document.getElementById("tab-manager-panel");
@@ -294,15 +371,6 @@ document.addEventListener("DOMContentLoaded", () => {
     chrome.windows.update(windowId, { focused: true });
   }
 
-  // Parse domain from URL
-  function getDomain(url) {
-    try {
-      return new URL(url).hostname;
-    } catch {
-      return url || "(unknown)";
-    }
-  }
-
   // Human-readable time ago
   function timeAgo(timestamp) {
     if (!timestamp) return "";
@@ -328,11 +396,42 @@ document.addEventListener("DOMContentLoaded", () => {
     return "";
   }
 
+  // Check if a URL is a YouTube video
+  function isYouTubeUrl(url) {
+    return /(?:youtube\.com\/(?:watch|embed|shorts)|youtu\.be\/)/.test(url || "");
+  }
+
+  // Save a tab to the appropriate list (YouTube → Watch Later, else → Saved Links)
+  function saveTabForLater(tab, btn) {
+    const url = tab.url;
+    if (isYouTubeUrl(url)) {
+      const videoId = extractVideoId(url);
+      if (videoId) {
+        const videos = loadVideos();
+        if (!videos.some((v) => v.id === videoId)) {
+          videos.unshift({ id: videoId, title: tab.title || "", addedAt: Date.now() });
+          saveVideos(videos);
+          renderVideos();
+        }
+      }
+    } else {
+      const links = loadSavedLinks();
+      if (!links.some((l) => l.url === url)) {
+        links.unshift({ url, title: tab.title || url, favicon: tab.favIconUrl || "", addedAt: Date.now() });
+        saveSavedLinks(links);
+        renderSavedLinks();
+      }
+    }
+    if (btn) {
+      btn.textContent = "Saved";
+      btn.classList.add("saved");
+    }
+  }
+
   // Build one tab row element
   function buildTabRow(tab, extras) {
     const row = document.createElement("div");
     row.className = "tm-tab-row" + (tab.active ? " active-tab" : "");
-    row.addEventListener("click", () => jumpToTab(tab.id, tab.windowId));
 
     const favicon = tab.favIconUrl
       ? `<img class="tm-tab-favicon" src="${tab.favIconUrl}" alt="">`
@@ -349,8 +448,26 @@ document.addEventListener("DOMContentLoaded", () => {
       age = `<span class="tm-tab-age ${cls}">${timeAgo(tab.lastAccessed)}</span>`;
     }
 
+    // Check if already saved
+    const alreadySaved = isYouTubeUrl(tab.url)
+      ? loadVideos().some((v) => v.id === extractVideoId(tab.url))
+      : loadSavedLinks().some((l) => l.url === tab.url);
+
     const title = tab.title || tab.url || "(untitled)";
-    row.innerHTML = `${favicon}<span class="tm-tab-title" title="${title}">${title}</span>${badges}${age}`;
+    row.innerHTML = `${favicon}<span class="tm-tab-title" title="${title}">${title}</span>${badges}${age}<button class="tm-tab-save${alreadySaved ? " saved" : ""}">${alreadySaved ? "Saved" : "Save"}</button>`;
+
+    // Click on the row (not the save button) → jump to tab
+    row.addEventListener("click", (e) => {
+      if (e.target.closest(".tm-tab-save")) return;
+      jumpToTab(tab.id, tab.windowId);
+    });
+
+    // Save button
+    row.querySelector(".tm-tab-save").addEventListener("click", (e) => {
+      e.stopPropagation();
+      saveTabForLater(tab, e.target);
+    });
+
     return row;
   }
 
