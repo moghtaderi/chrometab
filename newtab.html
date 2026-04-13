@@ -9,6 +9,28 @@
 <body>
   <div class="container">
 
+    <!-- Greeting & Clocks -->
+    <section class="section section-hero">
+      <p class="greeting" id="greeting"></p>
+      <div class="clocks">
+        <div class="clock">
+          <span class="clock-time" id="clock-pt"></span>
+          <span class="clock-label">Pacific</span>
+        </div>
+        <div class="clock-divider"></div>
+        <div class="clock">
+          <span class="clock-time" id="clock-et"></span>
+          <span class="clock-label">Eastern</span>
+        </div>
+        <div class="clock-divider"></div>
+        <div class="clock">
+          <span class="clock-time" id="clock-tehran"></span>
+          <span class="clock-label">Tehran</span>
+        </div>
+      </div>
+      <p class="clock-date" id="clock-date"></p>
+    </section>
+
     <!-- Primary AIs -->
     <section class="section">
       <div class="section-header">
@@ -71,6 +93,29 @@
           <img class="card-logo" src="https://www.google.com/s2/favicons?domain=notebooklm.google.com&sz=128" alt="NotebookLM logo">
           <span class="card-label">NotebookLM</span>
         </a>
+      </div>
+    </section>
+
+    <!-- Tab Manager -->
+    <section class="section">
+      <button id="tab-manager-toggle" class="collapsible-toggle">
+        <span class="toggle-title">Tab Manager</span>
+        <span class="toggle-count" id="tab-total-count">0</span>
+        <span class="toggle-arrow" id="tab-toggle-arrow">&#9660;</span>
+      </button>
+
+      <div id="tab-manager-panel" class="collapsible-panel">
+        <!-- View switcher -->
+        <div class="tm-view-switcher">
+          <button class="tm-view-btn active" data-view="domain">By Domain</button>
+          <button class="tm-view-btn" data-view="window">By Window / Age</button>
+        </div>
+
+        <!-- Search / filter -->
+        <input type="text" id="tm-search" class="video-input tm-search" placeholder="Filter tabs...">
+
+        <!-- Content area -->
+        <div id="tm-content" class="tm-content"></div>
       </div>
     </section>
 
