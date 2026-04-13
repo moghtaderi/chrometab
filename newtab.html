@@ -36,7 +36,7 @@
     </section>
 
     <!-- Secondary AIs -->
-    <section class="section section-secondary">
+    <section class="section">
       <div class="section-header">
         <h2 class="title title-secondary">Secondary</h2>
         <button id="launch-all-secondary" class="launch-all-btn launch-all-btn-secondary">Launch All</button>
@@ -46,8 +46,8 @@
           <img class="card-logo" src="https://www.google.com/s2/favicons?domain=chat.deepseek.com&sz=128" alt="DeepSeek logo">
           <span class="card-label">DeepSeek</span>
         </a>
-        <a href="https://www.minimaxi.com" class="card card-minimax" data-group="secondary">
-          <img class="card-logo" src="https://www.google.com/s2/favicons?domain=minimaxi.com&sz=128" alt="MiniMax logo">
+        <a href="https://agent.minimax.io/" class="card card-minimax" data-group="secondary">
+          <img class="card-logo" src="https://www.google.com/s2/favicons?domain=agent.minimax.io&sz=128" alt="MiniMax logo">
           <span class="card-label">MiniMax</span>
         </a>
         <a href="https://chat.qwen.ai" class="card card-qwen" data-group="secondary">
@@ -58,6 +58,41 @@
           <img class="card-logo" src="https://www.google.com/s2/favicons?domain=z.ai&sz=128" alt="Z AI logo">
           <span class="card-label">Z AI</span>
         </a>
+      </div>
+    </section>
+
+    <!-- Notebook LM -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="title title-secondary">Tools</h2>
+      </div>
+      <div class="grid grid-single">
+        <a href="https://notebooklm.google.com/" class="card card-notebooklm">
+          <img class="card-logo" src="https://www.google.com/s2/favicons?domain=notebooklm.google.com&sz=128" alt="NotebookLM logo">
+          <span class="card-label">NotebookLM</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Watch Later YouTube Videos -->
+    <section class="section section-watch-later">
+      <button id="watch-later-toggle" class="collapsible-toggle">
+        <span class="toggle-title">Watch Later</span>
+        <span class="toggle-count" id="video-count">0</span>
+        <span class="toggle-arrow" id="toggle-arrow">&#9660;</span>
+      </button>
+
+      <div id="watch-later-panel" class="collapsible-panel">
+        <!-- Add video form -->
+        <form id="add-video-form" class="add-video-form">
+          <input type="text" id="video-url-input" class="video-input" placeholder="Paste a YouTube URL and press Enter">
+          <button type="submit" class="video-add-btn">Add</button>
+        </form>
+
+        <!-- Video list -->
+        <div id="video-list" class="video-list"></div>
+
+        <p class="video-empty" id="video-empty">No videos saved yet. Paste a YouTube link above to get started.</p>
       </div>
     </section>
 
